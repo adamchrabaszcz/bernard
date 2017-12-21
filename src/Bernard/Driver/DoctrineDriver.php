@@ -69,9 +69,12 @@ class DoctrineDriver implements \Bernard\Driver
      */
     public function countMessages($queueName)
     {
-        return $this->connection->fetchColumn('SELECT COUNT(id) FROM bernard_messages WHERE queue = :queue AND visible = 1', array(
+        $query = 'SELECT COUNT(id) FROM bernard_messages WHERE queue = :queue AND visible = :visible';
+        
+        return (integer) $this->connection->fetchColumn($query, [
             'queue' => $queueName,
-        ));
+            'visible' => true,
+        ]);
     }
 
     /**
@@ -149,11 +152,16 @@ class DoctrineDriver implements \Bernard\Driver
      */
     public function peekQueue($queueName, $index = 0, $limit = 20)
     {
-        $query = 'SELECT message FROM bernard_messages WHERE queue = ? LIMIT ' . $index . ', ' . $limit;
-
-        $statement = $this->connection->executeQuery($query, array($queueName));
-
-        return $statement->fetchAll(\PDO::FETCH_COLUMN);
+        $parameters = [$queueName, $limit, $index];
+        $types = ['string', 'integer', 'integer'];
+        
+        $query = 'SELECT message FROM bernard_messages WHERE queue = ? ORDER BY sentAt LIMIT ? OFFSET ?';
+        
+        return $this
+            ->connection
+            ->executeQuery($query, $parameters, $types)
+            ->fetchAll(\PDO::FETCH_COLUMN)
+        ;
     }
 
     /**
