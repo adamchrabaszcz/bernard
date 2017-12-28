@@ -134,7 +134,7 @@ class DoctrineDriver implements \Bernard\Driver
 
         if ($id) {
             //$this->connection->update('bernard_messages', array('visible' => 0), compact('id'));
-            $this->connection->delete('bernard_messages', array('id' => compact('id'));
+            $this->connection->delete('bernard_messages', array('id' => compact('id')));
 
             return array($message, $id);
         }
